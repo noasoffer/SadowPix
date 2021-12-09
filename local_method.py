@@ -111,99 +111,100 @@ class LocalMesh:
             self.u[i, j + 1] += fix
 
 
-    def create_wall_mesh(self, i, j, param):
-        # creates 5 parts of a wall block
-        lwall = create_four_points_vertical([j * self.sqr_size, i * self.sqr_size, 0],
-                                                   [(j + 1) * self.sqr_size, i * self.sqr_size, param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(lwall)
-        rwall = create_four_points_vertical([j * self.sqr_size, i * self.sqr_size + self.wall_thickness, 0],
-                                                   [(j + 1) * self.sqr_size, i * self.sqr_size + self.wall_thickness,
+def create_wall_mesh(mesh, i, j, param):
+    # creates 5 parts of a wall block
+    lwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+                                                [(j + 1) * mesh.sqr_size, i * mesh.sqr_size, param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(lwall)
+    rwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness, 0],
+                                                [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
+                                                param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(rwall)
+    upwall = create_four_points_vertical([(j + 1) * mesh.sqr_size, i * mesh.sqr_size, 0],
+                                                [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                     param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(rwall)
-        upwall = create_four_points_vertical([(j + 1) * self.sqr_size, i * self.sqr_size, 0],
-                                                    [(j + 1) * self.sqr_size, i * self.sqr_size + self.wall_thickness,
-                                                     param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(upwall)
-        dwnwall = create_four_points_vertical([j * self.sqr_size, i * self.sqr_size, 0],
-                                                     [j * self.sqr_size, i * self.sqr_size + self.wall_thickness,
-                                                      param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(dwnwall)
-        topwall = create_four_points_horizontal([j * self.sqr_size, i * self.sqr_size, param],
-                                                      [(j + 1) * self.sqr_size, i * self.sqr_size + self.wall_thickness,
-                                                       param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(topwall)
-
-    def create_receiver_mesh(self, i, j, param):
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(create_four_points_horizontal([j * self.sqr_size, self.wall_thickness + i * self.sqr_size, param],[(j + 1) * self.sqr_size - self.wall_thickness,(i + 1) * self.sqr_size, param]))
-
-    def create_plus_chamfer(self, i, j, param):
-        chamferx_dist = param / self.S
-        points = []
-        points.append([j * self.sqr_size + self.wall_thickness, (i + 1) * self.sqr_size - chamferx_dist, self.r[j, i]])
-        points.append([j * self.sqr_size + self.wall_thickness, (i + 1) * self.sqr_size, self.r[j, i] + param])
-        points.append([(j + 1) * self.sqr_size, (i + 1) * self.sqr_size, self.r[j, i] + param])
-        points.append([(j + 1) * self.sqr_size, (i + 1) * self.sqr_size - chamferx_dist, self.r[j, i]])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(points)
-
-    def create_minus_chamfer(self, i, j, param):
-        chamferx_dist = param / self.S
-        points = []
-        points.append([j * self.sqr_size + self.wall_thickness, i * self.sqr_size + self.wall_thickness + chamferx_dist, self.r[j, i]])
-        points.append([j * self.sqr_size + self.wall_thickness, i * self.sqr_size + self.wall_thickness, self.r[j, i] + param])
-        points.append([(j + 1) * self.sqr_size, i * self.sqr_size + self.wall_thickness, self.r[j, i] + param])
-        points.append([(j + 1) * self.sqr_size, i * self.sqr_size + self.wall_thickness + chamferx_dist, self.r[j, i]])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(points)
-
-    def create_vwall_mesh(self, i, j, param):
-        # creates 5 parts of a wall block
-        lwall = create_four_points_vertical([j * self.sqr_size, i * self.sqr_size, 0],
-                                                   [j * self.sqr_size + self.wall_thickness, i * self.sqr_size, param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(lwall)
-
-        rwall = create_four_points_vertical([j * self.sqr_size, (i + 1) * self.sqr_size, 0],
-                                                   [j * self.sqr_size + self.wall_thickness, (i + 1) * self.sqr_size,
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(upwall)
+    dwnwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+                                                    [j * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                     param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(rwall)
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(dwnwall)
+    topwall = create_four_points_horizontal([j * mesh.sqr_size, i * mesh.sqr_size, param],
+                                                    [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
+                                                    param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(topwall)
 
-        upwall = create_four_points_vertical([j * self.sqr_size + self.wall_thickness, i * self.sqr_size, 0],
-                                                    [j * self.sqr_size + self.wall_thickness, (i + 1) * self.sqr_size,
-                                                     param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(upwall)
+def create_receiver_mesh(mesh, i, j, param):
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(create_four_points_horizontal([j * mesh.sqr_size, mesh.wall_thickness + i * mesh.sqr_size, param],[(j + 1) * mesh.sqr_size - mesh.wall_thickness,(i + 1) * mesh.sqr_size, param]))
 
-        dwnwall = create_four_points_vertical([j * self.sqr_size, i * self.sqr_size, 0],
-                                                     [j * self.sqr_size, (i + 1) * self.sqr_size, param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(dwnwall)
+def create_chamfer(mesh, i, j, chamfer_p_param, chamfer_m_param ):
+    chamferx_dist_p = chamfer_p_param / mesh.S
+    chamferx_dist_m = chamfer_m_param / mesh.S
+    points_p = []
+    points_m = []
 
-        topwall = create_four_points_horizontal([j * self.sqr_size, i * self.sqr_size, param],
-                                                      [j * self.sqr_size + self.wall_thickness, (i + 1) * self.sqr_size,
-                                                       param])
-        n_verts = len(self.verts)
-        self.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-        self.verts.extend(topwall)
+    points_p.append([j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size - chamferx_dist_p, mesh.r[j, i]])
+    points_p.append([j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size, mesh.r[j, i] + chamfer_p_param])
+    points_p.append([(j + 1) * mesh.sqr_size, (i + 1) * mesh.sqr_size, mesh.r[j, i] + chamfer_p_param])
+    points_p.append([(j + 1) * mesh.sqr_size, (i + 1) * mesh.sqr_size - chamferx_dist_p, mesh.r[j, i]])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(points_p)
+
+    points_m.append([j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size + mesh.wall_thickness + chamferx_dist_m, mesh.r[j, i]])
+    points_m.append([j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size + mesh.wall_thickness, mesh.r[j, i] + chamfer_m_param])
+    points_m.append([(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness, mesh.r[j, i] + chamfer_m_param])
+    points_m.append([(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness + chamferx_dist_m, mesh.r[j, i]])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(points_m)
+
+
+def create_vwall_mesh(mesh, i, j, param):
+    # creates 5 parts of a wall block
+    lwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+                                                [j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size, param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(lwall)
+
+    rwall = create_four_points_vertical([j * mesh.sqr_size, (i + 1) * mesh.sqr_size, 0],
+                                                [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
+                                                param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(rwall)
+
+    upwall = create_four_points_vertical([j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size, 0],
+                                                [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
+                                                    param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(upwall)
+
+    dwnwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+                                                    [j * mesh.sqr_size, (i + 1) * mesh.sqr_size, param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(dwnwall)
+
+    topwall = create_four_points_horizontal([j * mesh.sqr_size, i * mesh.sqr_size, param],
+                                                    [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
+                                                    param])
+    n_verts = len(mesh.verts)
+    mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
+    mesh.verts.extend(topwall)
 
 
 def parse_args():
@@ -247,12 +248,11 @@ if __name__ == '__main__':
     
     for i in range(local_mesh.grid + 1):
         for j in range(local_mesh.grid):
-            local_mesh.create_wall_mesh(i, j, local_mesh.u[j, i])
+            create_wall_mesh(local_mesh, i, j, local_mesh.u[j, i])
             if local_mesh.grid != i:
-                local_mesh.create_receiver_mesh(i, j, local_mesh.r[j, i])
-                local_mesh.create_plus_chamfer(i, j, local_mesh.chamfer_p[j, i])
-                local_mesh.create_minus_chamfer(i, j, local_mesh.chamfer_m[j, i])
-                local_mesh.create_vwall_mesh(i, j, local_mesh.v[j, i])
+                create_receiver_mesh(local_mesh,i, j, local_mesh.r[j, i])
+                create_chamfer(local_mesh, i, j, local_mesh.chamfer_p[j, i], local_mesh.chamfer_m[j, i])
+                create_vwall_mesh(local_mesh, i, j, local_mesh.v[j, i])
 
     with open(args.output, 'w+') as output_file:
         for v in local_mesh.verts:

@@ -41,8 +41,8 @@ class LocalMesh:
        
        
     def initialize_values(self):
-        #TODO change default value
-        self.light_angle = 60
+        #originaly 65
+        self.light_angle = 45
         angle = self.light_angle * (np.pi / 180)
         self.S = np.cos(angle) / np.sin(angle)
         self.u = np.zeros([self.grid, self.grid + 1])
@@ -212,11 +212,12 @@ def parse_args():
     parser.add_argument('-o', '--output',
                         default='mesh_local.obj',
                         type=str)
+    #originaly 0.25
     parser.add_argument('--wall_thickness',
-                        default=0.25, type=float)
+                        default=0.5, type=float)
+    #originaly 2.5
     parser.add_argument('--pixel_dimensions',
-                        default=2.5, type=float)
-    # TODO change default
+                        default=1, type=float)
     parser.add_argument('--product_size',
                         default=200, type=int)
     # TODO change default

@@ -14,17 +14,13 @@ def create_four_points_horizontal(point1, point3):
     return [point1, point2, point3, point4]
 
 def create_square_photo(photo, size):
-    picture = Image.open(photo).convert('L')  # opens and converts to grayscale
-    if picture.width != picture.height:
-        #TODO check if neccessry
-        pass
+    picture = Image.open(photo).convert('L')
     picture = picture.resize((size, size), Image.ANTIALIAS)
     return np.array(picture) / 255
 
 
 class LocalMesh:
-    #TODO change default value
-    def __init__(self, photos, product_size=200, receiver_dimensions=2.5, wall_thickness=0.25):
+    def __init__(self, photos, product_size=200, receiver_dimensions=1, wall_thickness=0.5):
         assert (len(photos) == 3)
         
         self.photos =[]
@@ -41,7 +37,6 @@ class LocalMesh:
        
        
     def initialize_values(self):
-        #originaly 65
         self.light_angle = 45
         angle = self.light_angle * (np.pi / 180)
         self.S = np.cos(angle) / np.sin(angle)
@@ -112,30 +107,29 @@ class LocalMesh:
 
 
 def create_wall_mesh(mesh, i, j, param):
-    # creates 5 parts of a wall block
-    lwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+    left_wall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
                                                 [(j + 1) * mesh.sqr_size, i * mesh.sqr_size, param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(lwall)
-    rwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness, 0],
+    mesh.verts.extend(left_wall)
+    right_wall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness, 0],
                                                 [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                 param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(rwall)
-    upwall = create_four_points_vertical([(j + 1) * mesh.sqr_size, i * mesh.sqr_size, 0],
+    mesh.verts.extend(right_wall)
+    up_wall = create_four_points_vertical([(j + 1) * mesh.sqr_size, i * mesh.sqr_size, 0],
                                                 [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                     param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(upwall)
-    dwnwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+    mesh.verts.extend(up_wall)
+    down_wall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
                                                     [j * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                     param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(dwnwall)
+    mesh.verts.extend(down_wall)
     topwall = create_four_points_horizontal([j * mesh.sqr_size, i * mesh.sqr_size, param],
                                                     [(j + 1) * mesh.sqr_size, i * mesh.sqr_size + mesh.wall_thickness,
                                                     param])
@@ -173,31 +167,31 @@ def create_chamfer(mesh, i, j, chamfer_p_param, chamfer_m_param ):
 
 def create_vwall_mesh(mesh, i, j, param):
     # creates 5 parts of a wall block
-    lwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+    left_wall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
                                                 [j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size, param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(lwall)
+    mesh.verts.extend(left_wall)
 
-    rwall = create_four_points_vertical([j * mesh.sqr_size, (i + 1) * mesh.sqr_size, 0],
+    right_wall = create_four_points_vertical([j * mesh.sqr_size, (i + 1) * mesh.sqr_size, 0],
                                                 [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
                                                 param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(rwall)
+    mesh.verts.extend(right_wall)
 
-    upwall = create_four_points_vertical([j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size, 0],
+    up_wall = create_four_points_vertical([j * mesh.sqr_size + mesh.wall_thickness, i * mesh.sqr_size, 0],
                                                 [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
                                                     param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(upwall)
+    mesh.verts.extend(up_wall)
 
-    dwnwall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
+    down_wall = create_four_points_vertical([j * mesh.sqr_size, i * mesh.sqr_size, 0],
                                                     [j * mesh.sqr_size, (i + 1) * mesh.sqr_size, param])
     n_verts = len(mesh.verts)
     mesh.faces.extend([[n_verts, n_verts + 1, n_verts + 2], [n_verts, n_verts + 2, n_verts + 3]])
-    mesh.verts.extend(dwnwall)
+    mesh.verts.extend(down_wall)
 
     topwall = create_four_points_horizontal([j * mesh.sqr_size, i * mesh.sqr_size, param],
                                                     [j * mesh.sqr_size + mesh.wall_thickness, (i + 1) * mesh.sqr_size,
@@ -212,19 +206,14 @@ def parse_args():
     parser.add_argument('-o', '--output',
                         default='mesh_local.obj',
                         type=str)
-    #originaly 0.25
     parser.add_argument('--wall_thickness',
                         default=0.5, type=float)
-    #originaly 2.5
     parser.add_argument('--pixel_dimensions',
                         default=1, type=float)
     parser.add_argument('--product_size',
                         default=200, type=int)
-    # TODO change default
     parser.add_argument('-p', '--photos', nargs='*',
-                        default=["photos/pic_c.jpg",
-                                 "photos/pic_b.jpg",
-                                 "photos/pic_a.jpg"])
+                        default=["photos/frida.jpeg","photos/salvador_dali.jpeg","photos/adel.jpeg"])
     return parser.parse_args()
 
 
@@ -232,8 +221,6 @@ if __name__ == '__main__':
     import os
     import sys
 
-    #TODO maybe needs to be deleted
-    # sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
     args = parse_args()
 
     resized_photos = []

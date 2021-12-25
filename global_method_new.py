@@ -3,6 +3,7 @@ import argparse
 from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
+from tqdm import tqdm
 
 
 def show_image(image):
@@ -108,58 +109,28 @@ class GlobalMesh:
         self.vert.extend(points)
 
 
-    def optimize(self):
-        fails1 = 0
-        fails2 = 0
-        success = 0
-        success_rand = 0
-        convergence_fail = 0
-    #TODO this loop is for the printing ---need to see if we want it -- I didn't change
-        for i in range(self.iterations):
-            if i % 1000 == 0:
-                #TODO  change printing format once we understand what it means
-                print(
-                    f'{i * 100 / self.iterations}% success:{success * 100 / (i + 1)}%,success_rand:{success_rand * 100 / (i + 1)}%, fail1:{fails1 * 100 / (i + 1)}%,fail2:{fails2 * 100 / (i + 1)}% obj_value:{self.objective_value}')
-            status, delta_obj = self.iteration()
-            if status > 0:
-                convergence_fail = 0
-                if delta_obj == 1:
-                    success_rand += 1
-                success += 1
-            elif status == -1:
-                convergence_fail += 1
-                fails1 += 1
-            else:
-                convergence_fail += 1
-                fails2 += 1
-            if convergence_fail == 100:
-                print(f"optimizing failed after {i} steps, obj value={self.objective_value}")
-                break
-
     def iteration(self):
-        delta = 0
-        while 0 == delta:
-            #TODO ask yariv why hey chose this range
-            delta = np.random.randint(-5, 6)
-        idx = np.random.choice(self.height.size, 1, p=self.idx_cost)[0]
-        row = idx // self.grid_size
-        col = idx % self.grid_size
-        self.height[row, col] += delta
-        if self.legal_iteration(delta,row, col):
-            next_l = self.calculate_l(self.height, self.L, row, col)
-            new_objective = self.get_objective_value(next_l)
-            objective_diff = self.check_objective_diff(new_objective)
-            if objective_diff > 0:
-                self.L = next_l
-                self.T -= self.alpha
-                self.objective_value = new_objective
-                return new_objective, objective_diff
+        for i in tqdm(range(self.iterations)):
+            delta = 0
+            while 0 == delta:
+                #TODO ask yariv why hey chose this range
+                delta = np.random.randint(-5, 6)
+            idx = np.random.choice(self.height.size, 1, p=self.idx_cost)[0]
+            row = idx // self.grid_size
+            col = idx % self.grid_size
+            self.height[row, col] += delta
+            if self.legal_iteration(delta,row, col):
+                next_l = self.calculate_l(self.height, self.L, row, col)
+                new_objective = self.get_objective_value(next_l)
+                objective_diff = self.check_objective_diff(new_objective)
+                if objective_diff > 0:
+                    self.L = next_l
+                    self.T -= self.alpha
+                    self.objective_value = new_objective
+                else:
+                    self.height[row, col] -= delta
             else:
                 self.height[row, col] -= delta
-                return -2, None
-        else:
-            self.height[row, col] -= delta
-            return -1, None
 
 
     def check_objective_diff (self, new_objective):
@@ -364,7 +335,7 @@ if __name__ == '__main__':
                             W_S=args.w_smooth)
     print("Starting global method")
 
-    global_mesh.optimize()
+    global_mesh.iteration()
     global_mesh.create_obj()
 
     with open(args.output, 'w+') as output_file:

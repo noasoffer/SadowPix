@@ -70,7 +70,7 @@ def create_square_photo(photo, size):
 class GlobalMesh:
     def __init__(self, input_pics, product_size=200, heightfield=1,
                  #TODO change light angle
-                 light_angle=60, W_G=1.5, W_S=0.001, radius=10, iterations=1000, biased_costs=True):
+                 light_angle=60, W_G=1.5, W_S=0.001, radius=10, iterations=1000):
 
         self.photos = input_pics
         #TODO change this
@@ -88,6 +88,7 @@ class GlobalMesh:
 
     def calc_initialize_values(self):
         self.height = np.zeros([self.grid_size, self.grid_size])
+        self.idx_cost = np.zeros(self.height.size)
         self.S = 1 / np.tan(self.light_angle * (np.pi / 180))
         self.T = 1
         self.alpha = self.T / self.iterations
@@ -95,7 +96,6 @@ class GlobalMesh:
         self.L = Calculate_L( self.radius, self.grid_size, len(self.photos)).calculate_L_total(self.height)
         self.pos_radius = np.arange(1, self.radius + 2)
         self.neg_radius = self.pos_radius[::-1]
-        # self.idx_cost = np.zeros(self.height.size)
         self.objective_value = self.get_objective_value(self.L)
 
     def mesh_initialization(self):
@@ -141,8 +141,9 @@ class GlobalMesh:
         while 0 == delta:
             #TODO ask yariv why hey chose this range
             delta = np.random.randint(-5, 6)
-        row = np.random.randint(0, self.grid_size)
-        col = np.random.randint(0, self.grid_size)
+        idx = np.random.choice(self.height.size, 1, p=self.idx_cost)[0]
+        row = idx // self.grid_size
+        col = idx % self.grid_size
         self.height[row, col] += delta
         if self.legal_iteration(delta,row, col):
             next_l = self.calculate_l(self.height, self.L, row, col)
@@ -175,17 +176,13 @@ class GlobalMesh:
     def get_objective_value(self, L): 
         g_convolution_p_convolution_l = gradient_convolution(L_and_p_convolution(L))
         h_convolution_g = gradient_convolution(self.height)
-        # parts = np.zeros(3)
         l1 = mse(L_and_p_convolution(L), self.photos)
-        # parts[0] = l1.sum()
         l2 = self.W_G * mse(g_convolution_p_convolution_l, self.filter_images)
-        # parts[1] = l2.sum()
         l3 = self.W_S * mse(h_convolution_g, np.zeros(h_convolution_g.shape))
         l3 = l3[np.newaxis, :]
-        # parts[2] = l3.sum()
-        # loss = np.concatenate([l1, l2, l3])
-        # loss = np.sum(loss, axis=0).reshape(self.height.size)
-        # self.idx_cost = loss / loss.sum()
+        loss = np.concatenate([l1, l2, l3])
+        loss = np.sum(loss, axis=0).reshape(self.height.size)
+        self.idx_cost = loss / loss.sum()
         return sum([l1.sum(),l2.sum(), l3.sum()])
 
     def legal_iteration(self, delta, row, col):
@@ -238,9 +235,7 @@ class Calculate_L:
     def __init__(self, radius, grid_size, num_of_photos):
         self.grid_size = grid_size
         self.radius = radius
-        #TODO check if this for the model
         self.compare_idx = np.arange(1, radius + 1)
-        #TODO check if this for the model
         self.current_matrix = np.arange(0, grid_size).reshape([grid_size, 1]) + self.compare_idx
         self.num_of_angles = num_of_photos
 
@@ -333,9 +328,6 @@ def parse_args():
                         default=1.5, type=float )
     parser.add_argument("-s", "--w_smooth",
                         default=0.001, type=float )
-    #TODO check this
-    parser.add_argument('-b', '--biased_costs',
-                        default=True, action='store_true', help="Whether to use biased costs method")
     #TODO change default
     parser.add_argument("--heightfield",
                         default=1, type=int)
@@ -369,8 +361,7 @@ if __name__ == '__main__':
                             heightfield=args.heightfield,
                             light_angle=args.light_angle,
                             W_G=args.w_gradient,
-                            W_S=args.w_smooth,
-                            biased_costs=args.biased_costs)
+                            W_S=args.w_smooth)
     print("Starting global method")
 
     global_mesh.optimize()

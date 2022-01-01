@@ -60,21 +60,18 @@ def create_four_points_horizontal(point1, point3):
 
 
 def create_square_photo(photo, size):
-    picture = Image.open(photo).convert('L')  # opens and converts to grayscale
+    picture = Image.open(photo).convert('L')
     if picture.width != picture.height:
-        #TODO check if neccessry
         pass
     picture = picture.resize((size, size), Image.ANTIALIAS)
     return np.array(picture) / 255
 
 
 class GlobalMesh:
-    def __init__(self, input_pics, product_size=200, heightfield=1,
-                 #TODO change light angle
-                 light_angle=60, W_G=1.5, W_S=0.001, radius=10, iterations=1000):
+    def __init__(self, input_pics, product_size=200, heightfield=0.5,
+                 light_angle=45, W_G=1.5, W_S=0.001, radius=10, iterations=200):
 
         self.photos = input_pics
-        #TODO change this
         self.filter_images = gradient_convolution(L_and_p_convolution(self.photos))
         self.heightfield = heightfield
         self.product_size = product_size
@@ -113,7 +110,6 @@ class GlobalMesh:
         for i in tqdm(range(self.iterations)):
             delta = 0
             while 0 == delta:
-                #TODO ask yariv why hey chose this range
                 delta = np.random.randint(-5, 6)
             idx = np.random.choice(self.height.size, 1, p=self.idx_cost)[0]
             row = idx // self.grid_size
@@ -292,25 +288,22 @@ def parse_args():
                         type=str)
     parser.add_argument('--product_size',
                         default=200, type=int)
-    #TODO change default
+
     parser.add_argument("-i", "--iterations",
-                        default=2 * 10 ** 6, type=int)
+                        default=10**9, type=int)
     parser.add_argument("-g", "--w_gradient",
                         default=1.5, type=float )
     parser.add_argument("-s", "--w_smooth",
                         default=0.001, type=float )
-    #TODO change default
     parser.add_argument("--heightfield",
-                        default=1, type=int)
-    #TODO change default
+                        default=0.5, type=int)
     parser.add_argument("-l", "--light_angle",
-                        default=60, type=int )
-    #TODO change default pic
+                        default=45, type=int )
     parser.add_argument('-p', '--photos', nargs='*',
-                        default=["photos/pic_a.jpg",
-                                 "photos/pic_b.jpg",
-                                 "photos/pic_c.jpg",
-                                 "photos/pic_d.jpg"])
+                        default=["photos/adle.jpeg",
+                                 "photos/elvis.jpeg",
+                                 "photos/frida.jpeg",
+                                 "photos/salvador_dali.jpeg"])
     return parser.parse_args()
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ import cv2
 from tqdm import tqdm
 
 
+
 def show_image(image):
     image = np.clip(image, 0, 1)
     if image.shape[0] == 1:

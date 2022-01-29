@@ -30,6 +30,6 @@ Mesh will be saved in to mesh_local.obj file.
 ❯ python global_method.py 
 # Convergence might take some time
 ```
-Mesh will be saved in to mesh_global.obj file. 
+Mesh will be saved in to mesh_global.obj file.
 
 

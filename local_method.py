@@ -252,3 +252,4 @@ if __name__ == '__main__':
             output_file.write(f"f {face[0]} {face[1]} {face[2]}\n")            
     print(f"Mesh saved")
     output_file.close()
+# ready for submission
